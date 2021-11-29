@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'org.jsonschema2dataclass' version '3.2.1'
+}
+repositories {
+    mavenCentral()
+}
+
+ext {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+println "Building '${name}' version: ${version}"
+println "Running gradle version: $gradle.gradleVersion"
+println "JDK version: ${JavaVersion.current()}"
+
+dependencies {
+    implementation 'javax.validation:validation-api:2.0.1.Final'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
+    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.jayway.jsonpath:json-path:2.6.0'
+    implementation 'commons-io:commons-io:2.11.0'
+  // see src/main/resources/json/external_dependencies.json
+    implementation 'joda-time:joda-time:2.10.10'
+}
+
+jsonSchema2Pojo {
+  annotationStyle = 'gson'
+  source.setFrom files("${project.rootDir}/src/main/resources/json/schema/")
+  targetPackage = 'edu.kit.turntable.another.mapping'
+  targetDirectoryPrefix = file("${buildDir}/generated/sources/java")
+  propertyWordDelimiters = '_'
+}
+

@@ -1,0 +1,183 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "$id": "https://example.com/object1632752195.json", 
+    "title": "Root", 
+    "type": "object",
+    "required": [
+        "TargetId",
+        "BaseUrl",
+        "RegisteredMimeTypes",
+        "Methods"
+    ],
+    "properties": {
+        "TargetId": {
+            "$id": "#root/TargetId", 
+            "title": "Targetid", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "Coscine"
+            ],
+            "pattern": "^.*$"
+        },
+        "BaseUrl": {
+            "$id": "#root/BaseUrl", 
+            "title": "Baseurl", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "https://repo.example.org:8443/repo"
+            ],
+            "pattern": "^.*$"
+        },
+        "RegisteredMimeTypes": {
+            "$id": "#root/RegisteredMimeTypes", 
+            "title": "Registeredmimetypes", 
+            "type": "array",
+            "default": [],
+            "items": {
+                "$id": "#root/RegisteredMimeTypes/items", 
+                "title": "Items", 
+                "type": "string",
+                "default": "",
+                "examples": [
+                    "text/turtle"
+                ],
+                "pattern": "^.*$"
+            }
+        },
+        "Methods": {
+            "$id": "#root/Methods", 
+            "title": "Methods", 
+            "type": "object",
+            "required": [
+                "0.DOIP/Op.Retrieve"
+            ],
+            "properties": {
+                "0.DOIP/Op.Retrieve": {
+                    "$id": "#root/Methods/0.DOIP/Op.Retrieve", 
+                    "title": "0.doip/op.retrieve", 
+                    "type": "object",
+                    "required": [
+                        "Request",
+                        "Headers",
+                        "Url"
+                    ],
+                    "properties": {
+                        "Request": {
+                            "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request", 
+                            "title": "Request", 
+                            "type": "object",
+                            "required": [
+                                "Authentification",
+                                "Input"
+                            ],
+                            "properties": {
+                                "Authentification": {
+                                    "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Authentification", 
+                                    "title": "Authentification", 
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                        "{Token}"
+                                    ],
+                                    "pattern": "^.*$"
+                                },
+                                "Input": {
+                                    "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Input", 
+                                    "title": "Input", 
+                                    "type": "object",
+                                    "required": [
+                                        "Metadata"
+                                    ],
+                                    "properties": {
+                                        "Metadata": {
+                                            "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Input/Metadata", 
+                                            "title": "Metadata", 
+                                            "type": "object",
+                                            "required": [
+                                                "Identifiers"
+                                            ],
+                                            "properties": {
+                                                "Identifiers": {
+                                                    "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Input/Metadata/Identifiers", 
+                                                    "title": "Identifiers", 
+                                                    "type": "array",
+                                                    "default": [],
+                                                    "items": {
+                                                        "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Input/Metadata/Identifiers/items", 
+                                                        "title": "Items", 
+                                                        "type": "object",
+                                                        "required": [
+                                                            "Identifier",
+                                                            "IdentifierType"
+                                                        ],
+                                                        "properties": {
+                                                            "Identifier": {
+                                                                "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Input/Metadata/Identifiers/items/Identifier", 
+                                                                "title": "Identifier", 
+                                                                "type": "string",
+                                                                "default": "",
+                                                                "examples": [
+                                                                    "21.11102/{resourceId}@={path}"
+                                                                ],
+                                                                "pattern": "^.*$"
+                                                            },
+                                                            "IdentifierType": {
+                                                                "$id": "#root/Methods/0.DOIP/Op.Retrieve/Request/Input/Metadata/Identifiers/items/IdentifierType", 
+                                                                "title": "Identifiertype", 
+                                                                "type": "string",
+                                                                "default": "",
+                                                                "examples": [
+                                                                    "Handle"
+                                                                ],
+                                                                "pattern": "^.*$"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        ,
+                        "Headers": {
+                            "$id": "#root/Methods/0.DOIP/Op.Retrieve/Headers", 
+                            "title": "Headers", 
+                            "type": "object",
+                            "required": [
+                                "Authentification"
+                            ],
+                            "properties": {
+                                "Authentification": {
+                                    "$id": "#root/Methods/0.DOIP/Op.Retrieve/Headers/Authentification", 
+                                    "title": "Authentification", 
+                                    "type": "string",
+                                    "default": "",
+                                    "examples": [
+                                        "Bearer {Token}"
+                                    ],
+                                    "pattern": "^.*$"
+                                }
+                            }
+                        }
+                        ,
+                        "Url": {
+                            "$id": "#root/Methods/0.DOIP/Op.Retrieve/Url", 
+                            "title": "Url", 
+                            "type": "string",
+                            "default": "",
+                            "examples": [
+                                "https://coscine.rwth-aachen.de/coscine/api/Coscine.Api.Tree/Tree/{resourceId}/{path}"
+                            ],
+                            "pattern": "^.*$"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
