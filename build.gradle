@@ -25,11 +25,16 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.10'
 }
 
+sourceSets {
+  main {
+    java.srcDirs += file("${buildDir}/generated/sources/js2d/main")
+  }
+}
+
 jsonSchema2Pojo {
   annotationStyle = 'gson'
   source.setFrom files("${project.rootDir}/src/main/resources/json/schema/")
-  targetPackage = 'edu.kit.turntable.another.mapping'
-  targetDirectoryPrefix = file("${buildDir}/generated/sources/java")
+  targetPackage = 'edu.kit.turntable.mapping'
   propertyWordDelimiters = '_'
 }
 
