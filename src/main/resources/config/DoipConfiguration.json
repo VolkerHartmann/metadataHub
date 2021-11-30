@@ -1,0 +1,14 @@
+{
+    "listenAddress": "hostnameOfServer",
+    "port": 8888,
+    "backlog": 50,
+    "maxIdleTimeMillis": 300000,
+    "numThreads": 200,
+    "processorConfig": {
+        "serviceId": "ServiceId",
+        "serviceName": "MetadataHub for NFDI4Ing",
+        "serviceDescription": "Generic repository especially for metadata.",
+        "authenticationEnabled": true,
+        "defaultToken": "ProvideAToken"
+    }
+}

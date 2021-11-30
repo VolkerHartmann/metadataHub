@@ -1,4 +1,5 @@
 plugins {
+    id 'application'
     id 'java'
     id 'org.jsonschema2dataclass' version '3.2.1'
 }
@@ -7,8 +8,10 @@ repositories {
 }
 
 ext {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    // Define main class
+    javaMainClass = "edu.kit.metadatahub.doip.server.MetadataHub"
 }
 
 println "Building '${name}' version: ${version}"
@@ -16,6 +19,12 @@ println "Running gradle version: $gradle.gradleVersion"
 println "JDK version: ${JavaVersion.current()}"
 
 dependencies {
+    // DOIP SDK
+    implementation         'net.dona.doip:doip-sdk:2.1.0'
+    // Logging
+    implementation "org.slf4j:slf4j-api:1.7.32"
+    implementation "ch.qos.logback:logback-classic:1.2.7"
+
     implementation 'javax.validation:validation-api:2.0.1.Final'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
     implementation 'com.google.code.gson:gson:2.8.8'
@@ -38,3 +47,6 @@ jsonSchema2Pojo {
   propertyWordDelimiters = '_'
 }
 
+application {
+    mainClassName = javaMainClass
+}
