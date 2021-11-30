@@ -1,8 +1,13 @@
-# Turntable
+# MetadataHub
 
 Acts as a facade for multiple instances of a metadata repository.
 The server implements the Digital Object Interface Protocol specifier by DONA (DOIP).
-New instances may be added as plugins.
+For adding a new repository some code might be necessary.
+1. New repositories have to be added via configuration.
+2. Add code for transforming datacite metadata used by DOIP into proprietary metadata used by repository and vice versa.
+3. Add code for serving repository
+    - In case of an existing REST interface some Configuration might be sufficient.
+
 # Documentation
 ToDo
 
