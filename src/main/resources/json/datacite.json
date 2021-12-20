@@ -1,0 +1,47 @@
+{
+    "id": "mockup/016dc26f-5c42-45d4-8470-6456460b16ea",
+    "type": "0.TYPE/DO",
+    "attributes": {
+        "datacite": {
+            "identifiers": [{
+                    "identifier": "mockup/016dc26f-5c42-45d4-8470-6456460b16ea",
+                    "identifierType": "Handle"
+                }],
+            "creators": [{
+                    "name": "SELF",
+                    "nameType": "Personal",
+                    "nameIdentifiers": [],
+                    "affiliations": []
+                }],
+            "titles": [{
+                    "title": "Schema Document"
+                }],
+            "publisher": "NFDI4Ing",
+            "publicationYear": "2021",
+            "subjects": [],
+            "contributors": [],
+            "dates": [{
+                    "date": "2021-11-23T08:14:41.879Z",
+                    "dateType": "Created",
+                    "dateInformation": "Date of creation"
+                }, {
+                    "date": "2021-11-23T08:14:41.999Z",
+                    "dateType": "Updated",
+                    "dateInformation": "Date of last update"
+                }],
+            "alternateIdentifiers": [],
+            "relatedIdentifiers": [],
+            "sizes": [],
+            "formats": ["application/json"],
+            "rightsList": [],
+            "descriptions": [],
+            "geoLocations": [],
+            "fundingReferences": []
+        }
+    },
+    "elements": [{
+            "id": "schema",
+            "length": 693,
+            "type": "application/json"
+        }]
+}

@@ -29,9 +29,15 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation 'com.jayway.jsonpath:json-path:2.6.0'
+    // Apache Commons
     implementation 'commons-io:commons-io:2.11.0'
+    // Spring Framework
+    // https://mvnrepository.com/artifact/org.springframework/spring-web
+    implementation 'org.springframework:spring-web:5.3.13'
+
   // see src/main/resources/json/external_dependencies.json
     implementation 'joda-time:joda-time:2.10.10'
+    
 }
 
 sourceSets {

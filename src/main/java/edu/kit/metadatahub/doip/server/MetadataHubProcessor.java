@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import edu.kit.metadatahub.doip.ExtendedOperations;
+import edu.kit.metadatahub.doip.mapping.Mapping2HttpService;
 import edu.kit.turntable.mapping.MappingSchema;
 
 import java.io.ByteArrayInputStream;
@@ -52,7 +53,8 @@ import org.slf4j.LoggerFactory;
 /**
  * This Server implements the mapping to another metadata repository which will
  * not implement the DOIP interface.
- *
+ * It acts as a turntable which executes the apsropriate class for choosing the
+ * correct mapping implementation.
  */
 public class MetadataHubProcessor implements DoipProcessor {
 
@@ -253,6 +255,9 @@ public class MetadataHubProcessor implements DoipProcessor {
     // Get Datacite metadata
     printRequest(req);
     // ToDo make mapping and request
+    Mapping2HttpService mappingClient = new Mapping2HttpService();
+    mappingClient.initMapping(null);
+    mappingClient.create(req, resp);
     printResponse(resp);
     LOGGER.debug("Returning from create().");
   }

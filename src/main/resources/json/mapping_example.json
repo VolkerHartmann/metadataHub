@@ -1,0 +1,24 @@
+{
+    "TargetId": "Coscine",
+    "BaseUrl": "https://repo.example.org:8443/repo",
+    "RegisteredMimeTypes": ["text/turtle"],
+    "Methods": {
+        "0.DOIP/Op.Retrieve": {
+            "Request": {
+                "Authentification": "{Token}",
+                "Input": {
+                    "Metadata": {
+                        "Identifiers": [{
+                                "Identifier": "21.11102/{resourceId}@={path}",
+                                "IdentifierType": "Handle"
+                            }]
+                    }
+                }
+            },
+            "Headers": {
+                "Authentification": "Bearer {Token}"
+            },
+            "Url": "https://coscine.rwth-aachen.de/coscine/api/Coscine.Api.Tree/Tree/{resourceId}/{path}"
+        }
+    }
+}

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * MetadataHub implemented based on the DOIP SDK using the Digital Object
  * Interface Protocol (DOIP). It's a facade for (multiple) implementations of
  * metadata repositories.
+ * This class intializes the DOIP server.
  */
 public class MetadataHub { 
 
@@ -43,6 +44,7 @@ public class MetadataHub {
   public static void main(String[] args) throws Exception {
     // Define default configuration file.
     String configFile = "config/DoipConfiguration.json";
+    LOGGER.trace("TRACE is ENABLED!");
 
     // Test if there is an alternative config file defined.
     if (args.length > 1) {

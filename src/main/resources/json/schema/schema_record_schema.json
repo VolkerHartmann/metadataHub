@@ -1,0 +1,177 @@
+{
+    "definitions": {},
+    "$schema": "http://json-schema.org/draft-07/schema#", 
+    "$id": "https://example.com/object1639392494.json", 
+    "title": "Root", 
+    "type": "object",
+    "required": [
+        "schemaId",
+        "type"
+    ],
+    "properties": {
+        "schemaId": {
+            "$id": "#root/schemaId", 
+            "title": "Schemaid", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "my_first_xsd"
+            ],
+            "pattern": "^.*$"
+        },
+        "pid": {
+            "$id": "#root/pid", 
+            "title": "PID", 
+            "type": "object",
+            "required": [
+                "identifier",
+                "identifierType"
+            ],
+            "properties": {
+                "identifier": {
+                    "$id": "#root/pid/identifier", 
+                    "title": "Identifier", 
+                    "type": "string",
+                    "examples": [
+                        "12345/6789012342"
+                    ]
+                },
+                "identifierType": {
+                    "$id": "#root/pid/identifierType", 
+                    "title": "Identifier Type", 
+                    "type": "string",
+                    "default": "",
+                    "examples": [
+                        "Handle"
+                    ],
+                    "pattern": "^.*$"
+                }
+            }
+        },
+        "schemaVersion": {
+            "$id": "#root/schemaVersion", 
+            "title": "Schemaversion", 
+            "type": "integer",
+            "examples": [
+                1
+            ],
+            "default": 0
+        },
+        "mimeType": {
+            "$id": "#root/mimeType", 
+            "title": "Mimetype", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "application/xml"
+            ],
+            "pattern": "^.*$"
+        },
+        "type": {
+            "$id": "#root/type", 
+            "title": "Type", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "XML"
+            ],
+            "enum": ["XML", "JSON"]
+        },
+        "createdAt": {
+            "$id": "#root/createdAt", 
+            "title": "Createdat", 
+            "type": "string",
+            "format": "date-time",
+            "default": "",
+            "examples": [
+                "2021-08-13T10:00:54Z"
+            ]
+        },
+        "lastUpdate": {
+            "$id": "#root/lastUpdate", 
+            "title": "Lastupdate", 
+            "type": "string",
+            "format": "date-time",
+            "default": "",
+            "examples": [
+                "2021-08-13T10:00:54.418Z"
+            ]
+        },
+        "acl": {
+            "$id": "#root/acl", 
+            "title": "Acl", 
+            "type": "array",
+            "default": [],
+            "items": {
+                "$id": "#root/acl/items", 
+                "title": "Items", 
+                "type": "object",
+                "required": [
+                    "id",
+                    "sid",
+                    "permission"
+                ],
+                "properties": {
+                    "id": {
+                        "$id": "#root/acl/items/id", 
+                        "title": "Id", 
+                        "type": "integer",
+                        "examples": [
+                            1
+                        ],
+                        "default": 0
+                    },
+                    "sid": {
+                        "$id": "#root/acl/items/sid", 
+                        "title": "Sid", 
+                        "type": "string",
+                        "default": "",
+                        "examples": [
+                            "SELF"
+                        ],
+                        "pattern": "^.*$"
+                    },
+                    "permission": {
+                        "$id": "#root/acl/items/permission", 
+                        "title": "Permission", 
+                        "type": "string",
+                        "default": "",
+                        "examples": [
+                            "ADMINISTRATE"
+                        ],
+                        "enum": ["ADMINISTRATE", "WRITE", "READ", "NONE"]
+                    }
+                }
+            }
+        },
+        "schemaDocumentUri": {
+            "$id": "#root/schemaDocumentUri", 
+            "title": "Schemadocumenturi", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "http://localhost:8040/api/v1/schemas/my_first_xsd?version=1"
+            ],
+            "pattern": "^.*$"
+        },
+        "schemaHash": {
+            "$id": "#root/schemaHash", 
+            "title": "Schemahash", 
+            "type": "string",
+            "default": "",
+            "examples": [
+                "sha1:08b262fe74604d6d5d001ed03718408e52bae9aa"
+            ],
+            "pattern": "^.*$"
+        },
+        "doNotSync": {
+            "$id": "#root/doNotSync", 
+            "title": "Donotsync", 
+            "type": "boolean",
+            "examples": [
+                true
+            ],
+            "default": true
+        }
+    }
+}

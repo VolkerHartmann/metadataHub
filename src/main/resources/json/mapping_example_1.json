@@ -1,0 +1,84 @@
+{
+    "TargetId": "MetaStore/schema",
+    "BaseUrl": "https://localhost:8040/api/v1/schema",
+    "Methods": {
+        "0.DOIP/Op.Retrieve": {
+            "element": "datacite",
+            "request": {
+                "http-method": "GET",
+                "mimetype": "application/vnd.datamanager.schema-record+json",
+                "Headers": {
+                    "Authentification": "Bearer {Token}"
+                },
+                "Url": "localhost:8040/api/v1/schema/${resourceId}"
+            },
+            "element": "schema",
+            "request": {
+                "http-method": "GET",
+                "mimetype": "application/vnd.datamanager.schema-record+json",
+                "Headers": {
+                    "Authentification": "Bearer {Token}"
+                },
+                "Url": "localhost:8040/api/v1/schema/${resourceId}"
+            }
+        },
+        "0.DOIP/Op.Create": {
+            "request": {
+                "http-method": "POST",
+                "mimetype": "application/vnd.datamanager.schema-record+json",
+                "Headers": {
+                    "Authentification": "Bearer {Token}"
+                },
+                "Url": "localhost:8040/api/v1/schema/${resourceId}"
+            },
+            "element": "schema",
+            "request": {
+                "http-method": "GET",
+                "mimetype": "application/vnd.datamanager.schema-record+json",
+                "Headers": {
+                    "Authentification": "Bearer {Token}"
+                },
+                "Url": "localhost:8040/api/v1/schema/${resourceId}"
+            }
+        }
+    },
+    "mappings": [
+        {
+            "key": "resourceType",
+            "datacite": "$.types.resourceType",
+            "external": "$.type"
+        },
+        {
+            "key": "schemaId",
+            "datacite": "$.subjects[0].subject",
+            "external": "$.schemaId"
+        },
+        {
+            "key": "resourceType",
+            "datacite": "$.types.resourceType",
+            "external": "$.type"
+        },
+        {
+            "key": "pid.identifier",
+            "datacite": "$.identifiers.identifier",
+            "external": "$.pid.identifier"
+        },
+        {
+            "key": "pid.type",
+            "datacite": "$.identifiers.identifierType",
+            "external": "$.pid.identifierType"
+        },
+        {
+            "key": "title",
+            "datacite": "$.titles[0].title",
+            "external": "$.label"
+        },
+        {
+            "key": "user",
+            "datacite": "$.creators[0].name",
+            "external": "$.acl[0].sid"
+        }
+    ],
+    "metadataRecord" : "{        \"schemaId\" : \"${schemaId}\",          \"pid\" : {    \"identifier\": \"${pid.identifier}\",    \"identifierType\": \"${pid.type}\"    \"label\" : \"${title}\",  \"mimeType\" : \"${mimeType}\",  \"type\" : \"${resourceType}\",      }",    
+    "dataciteRecord" : "{  \"identifiers\": [    {      \"identifierType\": \"${pid.type}\",      \"identifier\": \"${pid.identifier}\"    }  ],  \"creators\": [    {      \"name\": \"${user}\"    }  ],  \"titles\": [    {      \"title\": \"${title}\"    }  ],  \"subjects\": [    {      \"subject\": \"${schemaId}\"    }  ],  \"publisher\": \"NFDI4Ing\",  \"publicationYear\": \"2021\",  \"formats\": [    \"${mimeType}\"  ],  \"types\": {    \"resourceTypeGeneral\": \"Other\",    \"resourceType\": \"${resourceType}\"  },  \"schemaVersion\": \"http://datacite.org/schema/kernel-4\"}"
+}
