@@ -17,6 +17,12 @@ See [Turntable API](https://volkerhartmann.github.io/turntable/) for further det
 ## How to add a new repository
 ToDo
 
+## How to use SimpleServiceClient
+See code snippets [here](doc/ExampleUsingSimpleServiceClient.md)
+
+## How to access DoipServer
+See code snippets [here](doc/ExampleDoipClient.md)
+
 # Links
 - [DOIP Specification] (https://www.dona.net/sites/default/files/2018-11/DOIPv2Spec_1.pdf)
 - [DOIP SDK] (https://www.dona.net/sites/default/files/2020-09/DOIPv2SDKOverview.pdf)
