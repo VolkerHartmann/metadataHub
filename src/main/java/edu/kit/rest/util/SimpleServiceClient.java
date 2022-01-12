@@ -85,6 +85,7 @@ public class SimpleServiceClient {
   private Map<String, String> requestedResponseHeaders = null;
   // Contains the response of the request.
   private String responseBody;
+  private HttpStatus responseStatus;
 
   MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
   MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
@@ -272,6 +273,7 @@ public class SimpleServiceClient {
     UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(destinationUri).queryParams(queryParams);
     LOGGER.warn("Obtaining resource from resource URI {}.", uriBuilder.toUriString());
     ResponseEntity<C> response = restTemplate.exchange(uriBuilder.toUriString(), HttpMethod.GET, new HttpEntity<>(headers), responseType);
+    responseStatus = response.getStatusCode();
     collectResponseHeaders(response.getHeaders());
     LOGGER.warn("Request returned with status {}. Returning response body.", response.getStatusCodeValue());
     return response.getBody();
@@ -343,7 +345,8 @@ public class SimpleServiceClient {
     ClientHttpResponse response = restTemplate.execute(uriBuilder.toUriString(), HttpMethod.GET, requestCallback, responseExtractor);
     int status = -1;
     try {
-      status = response.getRawStatusCode();
+    responseStatus = response.getStatusCode();
+      status = responseStatus.value();
       LOGGER.warn("Download returned with status {}.", status);
       collectResponseHeaders(response.getHeaders());
     } catch (IOException ex) {
@@ -368,6 +371,7 @@ public class SimpleServiceClient {
 
     LOGGER.warn("Sending POST request for resource.");
     ResponseEntity<C> response = restTemplate.exchange(uriBuilder.toUriString(), HttpMethod.POST, new HttpEntity<>(resource, headers), responseType);
+    responseStatus = response.getStatusCode();
     LOGGER.warn("Request returned with status {}. Returning response body.", response.getStatusCodeValue());
     collectResponseHeaders(response.getHeaders());
     return response.getBody();
@@ -398,10 +402,11 @@ public class SimpleServiceClient {
 
     LOGGER.warn("Uploading content to destination URI {}.", uriBuilder.toUriString());
     ResponseEntity<String> response = restTemplate.postForEntity(uriBuilder.toUriString(), new HttpEntity<>(body, headers), String.class);
+    responseStatus = response.getStatusCode();
     LOGGER.warn("Upload returned with status {}.", response.getStatusCodeValue());
     responseBody = response.getBody();
     collectResponseHeaders(response.getHeaders());
-    return response.getStatusCode();
+    return responseStatus;
 
   }
 
@@ -436,10 +441,11 @@ public class SimpleServiceClient {
 
     LOGGER.warn("Uploading content to destination URI {}.", uriBuilder.toUriString());
     ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toUriString(), HttpMethod.PUT, new HttpEntity<>(body, headers), String.class);
+    responseStatus = response.getStatusCode();
     LOGGER.warn("Upload returned with status {}.", response.getStatusCodeValue());
     responseBody = response.getBody();
     collectResponseHeaders(response.getHeaders());
-    return response.getStatusCode();
+    return responseStatus;
 
   }
 
@@ -463,6 +469,7 @@ public class SimpleServiceClient {
     LOGGER.warn("Sending PUT request for resource with ETag {}.", etag);
     headers.setIfMatch(etag);
     response = restTemplate.exchange(uriBuilder.toUriString(), HttpMethod.PUT, new HttpEntity<>(resource, headers), responseType);
+    responseStatus = response.getStatusCode();
     collectResponseHeaders(response.getHeaders());
     LOGGER.warn("Request returned with status {}. Returning response body.", response.getStatusCodeValue());
     return response.getBody();
@@ -751,5 +758,12 @@ public class SimpleServiceClient {
       }
     }
     return destinationUri.toString();
+  }
+
+  /**
+   * @return the responseStatus
+   */
+  public HttpStatus getResponseStatus() {
+    return responseStatus;
   }
 }

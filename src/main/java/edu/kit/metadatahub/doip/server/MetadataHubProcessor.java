@@ -318,6 +318,10 @@ public class MetadataHubProcessor implements DoipProcessor {
       throw new DoipException(DoipConstants.STATUS_BAD_REQUEST, "No input found in request.");
     }
     // ToDo make mapping and request
+    Mapping2HttpService mappingClient = new Mapping2HttpService();
+    mappingClient.initMapping(null);
+    mappingClient.retrieve(req, resp);
+    printResponse(resp);
     LOGGER.debug("Returning from retrieve().");
   }
 

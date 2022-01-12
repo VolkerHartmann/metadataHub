@@ -27,45 +27,45 @@ import org.slf4j.LoggerFactory;
 /**
  * Map SchemaRecord to datacite.
  */
-public class SchemaRecordMapper  implements IMetadataMapper<SchemaRecordSchema>{
+public class SchemaRecordMapper implements IMetadataMapper<SchemaRecordSchema> {
 
   /**
    * Logger.
    */
   private final static Logger LOGGER = LoggerFactory.getLogger(SchemaRecordMapper.class);
+
   @Override
   public SchemaRecordSchema mapFromDatacite(Datacite43Schema datacite) {
     SchemaRecordSchema metadata = new SchemaRecordSchema();
     metadata.setSchemaId(datacite.getTitles().iterator().next().getTitle());
     metadata.setType(SchemaRecordSchema.Type.fromValue(datacite.getFormats().iterator().next()));
-    
+
     return metadata;
   }
 
   @Override
-  public Datacite43Schema mapToDatacite(SchemaRecordSchema metadata) {
+  public Datacite43Schema mapToDatacite(Object metadataObject) {
+    SchemaRecordSchema metadata = (SchemaRecordSchema) metadataObject;
     Datacite43Schema datacite = new Datacite43Schema();
     datacite.getFormats().add(metadata.getType().value());
     Title title = new Title();
     title.setTitle(metadata.getSchemaId());
     title.setTitleType(Title.TitleType.OTHER);
     datacite.getTitles().add(title);
-Date dates = new Date();
+    Date dates = new Date();
     dates.setDate(metadata.getCreatedAt().toString());
     dates.setDateType(Date.DateType.CREATED);
-Date upDate = new Date();
+    Date upDate = new Date();
     upDate.setDate(metadata.getCreatedAt().toString());
     upDate.setDateType(Date.DateType.CREATED);
     datacite.getDates().add(dates);
     datacite.getDates().add(upDate);
     Identifier identifier = new Identifier();
-    identifier.setIdentifier(metadata.getPid().getIdentifier());
+    identifier.setIdentifier(metadata.getSchemaId());//Pid().getIdentifier());
     identifier.setIdentifierType(metadata.getPid().getIdentifierType());
     datacite.getIdentifiers().add(identifier);
-    
+
     return datacite;
   }
-  
-  
-  
+
 }

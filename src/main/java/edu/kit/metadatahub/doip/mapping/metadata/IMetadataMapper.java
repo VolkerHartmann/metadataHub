@@ -25,7 +25,7 @@ public interface IMetadataMapper<M> {
   /** Map datacite to given metadata. */
   M mapFromDatacite(Datacite43Schema datacite);
   /** Map given metadata to datacite. */
-  Datacite43Schema mapToDatacite(M metadata);
+  Datacite43Schema mapToDatacite(Object metadata);
   
   
 }
