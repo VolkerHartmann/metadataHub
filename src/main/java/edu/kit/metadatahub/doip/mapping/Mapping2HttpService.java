@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Map;
 import net.dona.doip.DoipConstants;
 import net.dona.doip.InDoipSegment;
@@ -211,6 +212,9 @@ public class Mapping2HttpService implements IMappingInterface {
       resp.setStatus(DoipConstants.STATUS_BAD_REQUEST);
       resp.setAttribute(DoipConstants.MESSAGE_ATT, "Input is not allowed for retrieving a digital object!");
     }
+    DigitalObject digitalObject = new DigitalObject();
+    digitalObject.elements = new ArrayList<>();
+    digitalObject.id = req.getTargetId();
     // Get request using mapping. (Todo) 
     // As DOIP provide all elements of DO there is one configuration for each element.
     // Example code for mapping to schema registry of metastore!
@@ -246,12 +250,17 @@ public class Mapping2HttpService implements IMappingInterface {
     }
     Object metadataMapper = null;
     Class<?> metadataClass = null;
-    for (String element : selectedElements) {
+   for (String element : selectedElements) {
       int index;
+      boolean elementFound = false;
       for (index = 0; index < allElements.length; index++) {
         if (allElements[index].equals(element)) {
+          elementFound = true;
           break;
         }
+      }
+      if (!elementFound) { 
+        continue;
       }
       // First of all get targetId.
       String targetId = req.getTargetId();
@@ -322,12 +331,20 @@ public class Mapping2HttpService implements IMappingInterface {
         LOGGER.trace("Writing DigitalObject to output message.");
         doipElement.in = new ByteArrayInputStream(jsonElement.toString().getBytes());
       }
-      writeElementToOutput(resp, doipElement);
+      digitalObject.elements.add(doipElement);
+//      writeElementToOutput(resp, doipElement);
     }
 //    Element doipElement = new Element();
 //    doipElement.id = "dummy";
 //    doipElement.in = new ByteArrayInputStream("nothing".getBytes());
 //    writeElementToOutput(resp, doipElement);
+    JsonElement digitalObjectAsJson = GsonUtility.getGson().toJsonTree(digitalObject);
+    LOGGER.debug("JSON element: '{}'", digitalObjectAsJson.toString());
+    resp.getOutput().writeJson(digitalObjectAsJson);
+    // attach elements
+    for  (Element singleElement : digitalObject.elements) {
+      writeElementToOutput(resp, singleElement);
+    }
   
     resp.setStatus(DoipConstants.STATUS_OK);
     resp.getOutput().close();
