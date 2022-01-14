@@ -354,7 +354,117 @@ public class Mapping2HttpService implements IMappingInterface {
 
   @Override
   public void update(DoipServerRequest req, DoipServerResponse resp) throws DoipException, IOException {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    LOGGER.debug("Repo: Update...");
+    DoipUtil doipUtil = new DoipUtil();
+    DigitalObject digitalObject = doipUtil.getDigitalObject(req);
+    Map<String, byte[]> streamMap = DoipUtil.getStreams(req);
+    Datacite43Schema datacite = doipUtil.getDatacite(req);
+
+    // There should be an implementation class inside the mapping...
+    SchemaRecordSchema metadata = metadataMapper.mapFromDatacite(datacite);
+    // for Metastore handle is created outside (yet)
+    Pid pid = new Pid();
+    pid.setIdentifier(handleManager.createHandle());
+    pid.setIdentifierType("HANDLE");
+    metadata.setPid(pid);
+
+    // Build Request using mapping. (Todo) 
+    // Example code for mapping to schema registry of metastore!
+    // Configuration needed:
+    // - RequestUrl: http://localhost:8040/api/v1/schemas
+    // - Accept mimetype: "application/json"
+    // Mapper for datacite to proprietary metadata and vice versa: "edu.kit.metadatahub.doip.mapping.SchemaRecordMapper"
+    // - POST
+    //   - param for schema: "schema'
+    //   - param for metadata: "record"
+    // - Response class: SchemaRecordSchema.class
+    // Define placeholders:
+    // base URL
+    String baseUrl = "http://localhost:8040/api/v1/schemas/{targetId}";
+    String acceptType = "application/json";
+    SimpleServiceClient simpleClient = SimpleServiceClient.create(baseUrl);
+    simpleClient.accept(MediaType.parseMediaType(acceptType));
+    String httpVerb = "PUT";
+    String bodyParam4Schema = "schema";
+    String bodyParam4Metadata = "record";
+    String metadataClassName = "edu.kit.turntable.mapping.SchemaRecordSchema";
+    String mapperClassName = "edu.kit.metadatahub.doip.mapping.metadata.impl.SchemaRecordMapper";
+    Object metadataMapper = null;
+    Class<?> metadataClass = null;
+    try {
+      metadataClass = Class.forName(metadataClassName);
+      metadataMapper = Class.forName(mapperClassName).getDeclaredConstructor().newInstance();
+    } catch (ClassNotFoundException ex) {
+      LOGGER.error(null, ex);
+    } catch (NoSuchMethodException ex) {
+      LOGGER.error(null, ex);
+    } catch (Exception ex) {
+      LOGGER.error(null, ex);
+    }
+       // First of all get targetId.
+      String targetId = req.getTargetId();
+      // Replace targetId in URL
+     baseUrl = baseUrl.replace("{targetId}", URLEncoder.encode(targetId, Charset.forName("UTF-8")));
+
+    // For this example we use a POST
+    // add entries to form
+    for (String key : streamMap.keySet()) {
+      LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
+    }
+    InputStream documentStream = new ByteArrayInputStream(streamMap.get("schema"));
+    simpleClient.withFormParam(bodyParam4Schema, documentStream);
+    simpleClient.withFormParam(bodyParam4Metadata, metadata);
+    // post form and get HTTP status
+    HttpStatus resource = simpleClient.putForm(); //Resource(srs, SchemaRecordSchema.class);
+
+    if (resource.is2xxSuccessful()) {
+
+      // get response as object
+      Object responseBody;
+      responseBody = simpleClient.getResponseBody(metadataClass);
+      // After registration reference for PID should be set...
+      handleManager.editHandle(pid.getIdentifier(), metadata.getSchemaDocumentUri());
+      datacite = ((IMetadataMapper) metadataMapper).mapToDatacite(responseBody);
+
+      LOGGER.trace("Build response...");
+      DigitalObject dobj = new DigitalObject();
+      dobj.id = datacite.getIdentifiers().iterator().next().getIdentifier();
+      if (dobj.attributes == null) {
+        dobj.attributes = new JsonObject();
+      }
+      dobj.attributes.add(DoipUtil.ATTR_DATACITE, GsonUtility.getGson().toJsonTree(datacite));
+      dobj.type = DoipUtil.TYPE_DO;
+      dobj.elements = digitalObject.elements;
+      JsonElement dobjJson = GsonUtility.getGson().toJsonTree(dobj);
+      LOGGER.trace("Writing DigitalObject to output message.");
+      resp.writeCompactOutput(dobjJson);
+      resp.setStatus(DoipConstants.STATUS_OK);
+      resp.setAttribute(DoipConstants.MESSAGE_ATT, "Successfully created!");
+    } else {
+      String status = null;
+      switch(resource) {
+        case BAD_REQUEST:
+              status = DoipConstants.STATUS_BAD_REQUEST;
+              break;
+        case UNAUTHORIZED:
+              status = DoipConstants.STATUS_UNAUTHENTICATED;
+              break;
+        case CONFLICT:
+              status = DoipConstants.STATUS_CONFLICT;
+              break;
+        case FORBIDDEN:
+              status = DoipConstants.STATUS_FORBIDDEN;
+              break;
+        case NOT_FOUND:
+              status = DoipConstants.STATUS_NOT_FOUND;
+              break;
+        default:
+              status = DoipConstants.STATUS_ERROR;
+      }
+      resp.setStatus(status);
+      resp.setAttribute(DoipConstants.MESSAGE_ATT, resource.getReasonPhrase());
+    }
+    LOGGER.trace("Returning from update().");
   }
 
   @Override

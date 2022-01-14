@@ -342,6 +342,10 @@ public class MetadataHubProcessor implements DoipProcessor {
     String targetId = req.getTargetId();
     LOGGER.debug("Updating targetId {}. Obtaining DataResource from input message.", targetId);
     // ToDo make mapping and request
+     // ToDo make mapping and request
+    Mapping2HttpService mappingClient = new Mapping2HttpService();
+    mappingClient.initMapping(null);
+    mappingClient.update(req, resp);
     printResponse(resp);
     LOGGER.debug("Returning from update().");
   }
