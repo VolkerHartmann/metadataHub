@@ -18,6 +18,7 @@ package edu.kit.metadatahub.doip.mapping.metadata.impl;
 import edu.kit.metadatahub.doip.mapping.metadata.IMetadataMapper;
 import edu.kit.turntable.mapping.Datacite43Schema;
 import edu.kit.turntable.mapping.Date;
+import edu.kit.turntable.mapping.Description;
 import edu.kit.turntable.mapping.Identifier;
 import edu.kit.turntable.mapping.SchemaRecordSchema;
 import edu.kit.turntable.mapping.Title;

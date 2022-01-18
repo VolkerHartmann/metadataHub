@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import net.dona.doip.DoipConstants;
 import net.dona.doip.InDoipSegment;
@@ -116,6 +117,7 @@ public class Mapping2HttpService implements IMappingInterface {
     String httpVerb = "POST";
     String bodyParam4Schema = "schema";
     String bodyParam4Metadata = "record";
+    String[] header = {"ETag"};
     String metadataClassName = "edu.kit.turntable.mapping.SchemaRecordSchema";
     String mapperClassName = "edu.kit.metadatahub.doip.mapping.metadata.impl.SchemaRecordMapper";
     Object metadataMapper = null;
@@ -135,6 +137,23 @@ public class Mapping2HttpService implements IMappingInterface {
     // add entries to form
     for (String key : streamMap.keySet()) {
       LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
+    }
+      Map<String, String> container = new HashMap<>();
+    if (header != null) {
+      for (String attr : header) {
+        LOGGER.trace("Add header: '{}'", attr);
+        String value = null;
+        if ((digitalObject.attributes != null) &&(digitalObject.attributes.getAsJsonObject("header") != null) &&(!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+          value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
+          if (value != null) {
+           LOGGER.trace("Add header: '{}'= '{}'", attr, value);
+            simpleClient.withHeader(attr, value);
+          }
+        }
+        LOGGER.trace("Add key for collecting header: '{}'", attr);
+        container.put(attr, value);
+      }
+      simpleClient.collectResponseHeader(container);
     }
     InputStream documentStream = new ByteArrayInputStream(streamMap.get("schema"));
     simpleClient.withFormParam(bodyParam4Schema, documentStream);
@@ -160,6 +179,11 @@ public class Mapping2HttpService implements IMappingInterface {
       dobj.attributes.add(DoipUtil.ATTR_DATACITE, GsonUtility.getGson().toJsonTree(datacite));
       dobj.type = DoipUtil.TYPE_DO;
       dobj.elements = digitalObject.elements;
+      JsonObject restHeader = new JsonObject();
+      for (String items : container.keySet()) {
+        restHeader.addProperty(items, container.get(items));
+      }
+      dobj.attributes.add("header", restHeader);
       JsonElement dobjJson = GsonUtility.getGson().toJsonTree(dobj);
       LOGGER.trace("Writing DigitalObject to output message.");
       resp.writeCompactOutput(dobjJson);
@@ -240,6 +264,7 @@ public class Mapping2HttpService implements IMappingInterface {
     String[] responseClass = {null, ""};
     String[] metadataClassName = {null, "edu.kit.turntable.mapping.SchemaRecordSchema"};
     String[] mapperClassName = {null, "edu.kit.metadatahub.doip.mapping.metadata.impl.SchemaRecordMapper"};
+    String[][] header = {{"ETag"},{"ETag"}};
     String[] selectedElements = new String[0];
     if (req.getAttribute(ATTRIBUTE_ALL_ELEMENTS) != null && req.getAttribute(ATTRIBUTE_ALL_ELEMENTS).getAsBoolean()) {
       selectedElements = allElements;
@@ -284,6 +309,23 @@ public class Mapping2HttpService implements IMappingInterface {
       SimpleServiceClient simpleClient = SimpleServiceClient.create(baseUrl[index]);
       if (acceptMimetype[index] != null) {
         simpleClient.accept(MediaType.parseMediaType(acceptMimetype[index]));
+      }
+      Map<String, String> container = new HashMap<>();
+      if (header[index] != null) {
+        for (String attr : header[index]) {
+          LOGGER.trace("Add header: '{}'", attr);
+          String value = null;
+          if ((digitalObject.attributes != null) &&(digitalObject.attributes.getAsJsonObject("header") != null) &&(!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+            value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
+            if (value != null) {
+             LOGGER.trace("Add header: '{}'= '{}'", attr, value);
+              simpleClient.withHeader(attr, value);
+            }
+          }
+          LOGGER.trace("Add key for collecting header: '{}'", attr);
+          container.put(attr, value);
+        }
+        simpleClient.collectResponseHeader(container);
       }
       Object response;
       if (metadataClass != null) {
@@ -333,6 +375,17 @@ public class Mapping2HttpService implements IMappingInterface {
       }
       digitalObject.elements.add(doipElement);
 //      writeElementToOutput(resp, doipElement);
+      if (digitalObject.attributes == null) {
+        digitalObject.attributes = new JsonObject();
+      }
+      JsonObject restHeader = new JsonObject();
+      if (digitalObject.attributes.get("header") != null) {
+        restHeader = digitalObject.attributes.getAsJsonObject("header");
+      }
+      for (String items : container.keySet()) {
+        restHeader.addProperty(items, container.get(items));
+      }
+      digitalObject.attributes.add("header", restHeader);
     }
 //    Element doipElement = new Element();
 //    doipElement.id = "dummy";
@@ -362,11 +415,6 @@ public class Mapping2HttpService implements IMappingInterface {
 
     // There should be an implementation class inside the mapping...
     SchemaRecordSchema metadata = metadataMapper.mapFromDatacite(datacite);
-    // for Metastore handle is created outside (yet)
-    Pid pid = new Pid();
-    pid.setIdentifier(handleManager.createHandle());
-    pid.setIdentifierType("HANDLE");
-    metadata.setPid(pid);
 
     // Build Request using mapping. (Todo) 
     // Example code for mapping to schema registry of metastore!
@@ -382,9 +430,8 @@ public class Mapping2HttpService implements IMappingInterface {
     // base URL
     String baseUrl = "http://localhost:8040/api/v1/schemas/{targetId}";
     String acceptType = "application/json";
-    SimpleServiceClient simpleClient = SimpleServiceClient.create(baseUrl);
-    simpleClient.accept(MediaType.parseMediaType(acceptType));
     String httpVerb = "PUT";
+    String[] header = {"If-Match"};
     String bodyParam4Schema = "schema";
     String bodyParam4Metadata = "record";
     String metadataClassName = "edu.kit.turntable.mapping.SchemaRecordSchema";
@@ -405,6 +452,8 @@ public class Mapping2HttpService implements IMappingInterface {
       String targetId = req.getTargetId();
       // Replace targetId in URL
      baseUrl = baseUrl.replace("{targetId}", URLEncoder.encode(targetId, Charset.forName("UTF-8")));
+    SimpleServiceClient simpleClient = SimpleServiceClient.create(baseUrl);
+    simpleClient.accept(MediaType.parseMediaType(acceptType));
 
     // For this example we use a POST
     // add entries to form
@@ -412,6 +461,22 @@ public class Mapping2HttpService implements IMappingInterface {
       LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
     }
     InputStream documentStream = new ByteArrayInputStream(streamMap.get("schema"));
+      Map<String, String> container = new HashMap<>();
+    if (header != null) {
+      for (String attr : header) {
+        LOGGER.trace("Add header: '{}'", attr);
+        String value = null;
+        if ((digitalObject.attributes != null) &&(digitalObject.attributes.getAsJsonObject("header") != null) &&(!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+          value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
+          if (value != null) {
+            simpleClient.withHeader(attr, value);
+          }
+        }
+        LOGGER.trace("Add key for collecting header: '{}'= '{}'", attr, value);
+        container.put(attr, value);
+      }
+      simpleClient.collectResponseHeader(container);
+    }
     simpleClient.withFormParam(bodyParam4Schema, documentStream);
     simpleClient.withFormParam(bodyParam4Metadata, metadata);
     // post form and get HTTP status
@@ -422,8 +487,6 @@ public class Mapping2HttpService implements IMappingInterface {
       // get response as object
       Object responseBody;
       responseBody = simpleClient.getResponseBody(metadataClass);
-      // After registration reference for PID should be set...
-      handleManager.editHandle(pid.getIdentifier(), metadata.getSchemaDocumentUri());
       datacite = ((IMetadataMapper) metadataMapper).mapToDatacite(responseBody);
 
       LOGGER.trace("Build response...");
@@ -433,6 +496,15 @@ public class Mapping2HttpService implements IMappingInterface {
         dobj.attributes = new JsonObject();
       }
       dobj.attributes.add(DoipUtil.ATTR_DATACITE, GsonUtility.getGson().toJsonTree(datacite));
+      JsonObject restHeader = new JsonObject();
+      if (dobj.attributes.get("header") != null) {
+        restHeader = dobj.attributes.getAsJsonObject("header");
+      }
+      for (String items : container.keySet()) {
+        restHeader.addProperty(items, container.get(items));
+      }
+      dobj.attributes.add("header", restHeader);
+    
       dobj.type = DoipUtil.TYPE_DO;
       dobj.elements = digitalObject.elements;
       JsonElement dobjJson = GsonUtility.getGson().toJsonTree(dobj);
