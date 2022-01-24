@@ -138,15 +138,15 @@ public class Mapping2HttpService implements IMappingInterface {
     for (String key : streamMap.keySet()) {
       LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
     }
-      Map<String, String> container = new HashMap<>();
+    Map<String, String> container = new HashMap<>();
     if (header != null) {
       for (String attr : header) {
         LOGGER.trace("Add header: '{}'", attr);
         String value = null;
-        if ((digitalObject.attributes != null) &&(digitalObject.attributes.getAsJsonObject("header") != null) &&(!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+        if ((digitalObject.attributes != null) && (digitalObject.attributes.getAsJsonObject("header") != null) && (!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
           value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
           if (value != null) {
-           LOGGER.trace("Add header: '{}'= '{}'", attr, value);
+            LOGGER.trace("Add header: '{}'= '{}'", attr, value);
             simpleClient.withHeader(attr, value);
           }
         }
@@ -191,24 +191,24 @@ public class Mapping2HttpService implements IMappingInterface {
       resp.setAttribute(DoipConstants.MESSAGE_ATT, "Successfully created!");
     } else {
       String status = null;
-      switch(resource) {
+      switch (resource) {
         case BAD_REQUEST:
-              status = DoipConstants.STATUS_BAD_REQUEST;
-              break;
+          status = DoipConstants.STATUS_BAD_REQUEST;
+          break;
         case UNAUTHORIZED:
-              status = DoipConstants.STATUS_UNAUTHENTICATED;
-              break;
+          status = DoipConstants.STATUS_UNAUTHENTICATED;
+          break;
         case CONFLICT:
-              status = DoipConstants.STATUS_CONFLICT;
-              break;
+          status = DoipConstants.STATUS_CONFLICT;
+          break;
         case FORBIDDEN:
-              status = DoipConstants.STATUS_FORBIDDEN;
-              break;
+          status = DoipConstants.STATUS_FORBIDDEN;
+          break;
         case NOT_FOUND:
-              status = DoipConstants.STATUS_NOT_FOUND;
-              break;
+          status = DoipConstants.STATUS_NOT_FOUND;
+          break;
         default:
-              status = DoipConstants.STATUS_ERROR;
+          status = DoipConstants.STATUS_ERROR;
       }
       resp.setStatus(status);
       resp.setAttribute(DoipConstants.MESSAGE_ATT, resource.getReasonPhrase());
@@ -229,6 +229,7 @@ public class Mapping2HttpService implements IMappingInterface {
   @Override
   public void retrieve(DoipServerRequest req, DoipServerResponse resp) throws DoipException, IOException {
     LOGGER.debug("Repo: Retrieve...");
+    boolean retrieveElementOnly = false;
     // Check for correct syntax...
     InDoipSegment firstSegment = InDoipMessageUtil.getFirstSegment(req.getInput());
     if (firstSegment != null) {
@@ -264,18 +265,19 @@ public class Mapping2HttpService implements IMappingInterface {
     String[] responseClass = {null, ""};
     String[] metadataClassName = {null, "edu.kit.turntable.mapping.SchemaRecordSchema"};
     String[] mapperClassName = {null, "edu.kit.metadatahub.doip.mapping.metadata.impl.SchemaRecordMapper"};
-    String[][] header = {{"ETag"},{"ETag"}};
+    String[][] header = {{"ETag"}, {"ETag"}};
     String[] selectedElements = new String[0];
     if (req.getAttribute(ATTRIBUTE_ALL_ELEMENTS) != null && req.getAttribute(ATTRIBUTE_ALL_ELEMENTS).getAsBoolean()) {
       selectedElements = allElements;
     }
     if (req.getAttribute(ATTRIBUTE_ELEMENT) != null) {
+      retrieveElementOnly = true;
       selectedElements = new String[1];
       selectedElements[0] = req.getAttributeAsString(ATTRIBUTE_ELEMENT);
     }
     Object metadataMapper = null;
     Class<?> metadataClass = null;
-   for (String element : selectedElements) {
+    for (String element : selectedElements) {
       int index;
       boolean elementFound = false;
       for (index = 0; index < allElements.length; index++) {
@@ -284,7 +286,7 @@ public class Mapping2HttpService implements IMappingInterface {
           break;
         }
       }
-      if (!elementFound) { 
+      if (!elementFound) {
         continue;
       }
       // First of all get targetId.
@@ -315,10 +317,10 @@ public class Mapping2HttpService implements IMappingInterface {
         for (String attr : header[index]) {
           LOGGER.trace("Add header: '{}'", attr);
           String value = null;
-          if ((digitalObject.attributes != null) &&(digitalObject.attributes.getAsJsonObject("header") != null) &&(!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+          if ((digitalObject.attributes != null) && (digitalObject.attributes.getAsJsonObject("header") != null) && (!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
             value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
             if (value != null) {
-             LOGGER.trace("Add header: '{}'= '{}'", attr, value);
+              LOGGER.trace("Add header: '{}'= '{}'", attr, value);
               simpleClient.withHeader(attr, value);
             }
           }
@@ -340,24 +342,24 @@ public class Mapping2HttpService implements IMappingInterface {
 
       if (!resource.is2xxSuccessful()) {
         String status = null;
-        switch(resource) {
+        switch (resource) {
           case BAD_REQUEST:
-                status = DoipConstants.STATUS_BAD_REQUEST;
-                break;
+            status = DoipConstants.STATUS_BAD_REQUEST;
+            break;
           case UNAUTHORIZED:
-                status = DoipConstants.STATUS_UNAUTHENTICATED;
-                break;
+            status = DoipConstants.STATUS_UNAUTHENTICATED;
+            break;
           case CONFLICT:
-                status = DoipConstants.STATUS_CONFLICT;
-                break;
+            status = DoipConstants.STATUS_CONFLICT;
+            break;
           case FORBIDDEN:
-                status = DoipConstants.STATUS_FORBIDDEN;
-                break;
+            status = DoipConstants.STATUS_FORBIDDEN;
+            break;
           case NOT_FOUND:
-                status = DoipConstants.STATUS_NOT_FOUND;
-                break;
+            status = DoipConstants.STATUS_NOT_FOUND;
+            break;
           default:
-                status = DoipConstants.STATUS_ERROR;
+            status = DoipConstants.STATUS_ERROR;
         }
         resp.setStatus(status);
         resp.setAttribute(DoipConstants.MESSAGE_ATT, resource.getReasonPhrase());
@@ -393,12 +395,16 @@ public class Mapping2HttpService implements IMappingInterface {
 //    writeElementToOutput(resp, doipElement);
     JsonElement digitalObjectAsJson = GsonUtility.getGson().toJsonTree(digitalObject);
     LOGGER.debug("JSON element: '{}'", digitalObjectAsJson.toString());
+    if (retrieveElementOnly) {
+      LOGGER.trace("Write element directly to output...");
+     resp.getOutput().writeBytes(digitalObject.elements.get(0).in);
+    } else {
     resp.getOutput().writeJson(digitalObjectAsJson);
     // attach elements
-    for  (Element singleElement : digitalObject.elements) {
+    for (Element singleElement : digitalObject.elements) {
       writeElementToOutput(resp, singleElement);
     }
-  
+    }
     resp.setStatus(DoipConstants.STATUS_OK);
     resp.getOutput().close();
     resp.commit();
@@ -448,10 +454,10 @@ public class Mapping2HttpService implements IMappingInterface {
     } catch (Exception ex) {
       LOGGER.error(null, ex);
     }
-       // First of all get targetId.
-      String targetId = req.getTargetId();
-      // Replace targetId in URL
-     baseUrl = baseUrl.replace("{targetId}", URLEncoder.encode(targetId, Charset.forName("UTF-8")));
+    // First of all get targetId.
+    String targetId = req.getTargetId();
+    // Replace targetId in URL
+    baseUrl = baseUrl.replace("{targetId}", URLEncoder.encode(targetId, Charset.forName("UTF-8")));
     SimpleServiceClient simpleClient = SimpleServiceClient.create(baseUrl);
     simpleClient.accept(MediaType.parseMediaType(acceptType));
 
@@ -461,12 +467,12 @@ public class Mapping2HttpService implements IMappingInterface {
       LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
     }
     InputStream documentStream = new ByteArrayInputStream(streamMap.get("schema"));
-      Map<String, String> container = new HashMap<>();
+    Map<String, String> container = new HashMap<>();
     if (header != null) {
       for (String attr : header) {
         LOGGER.trace("Add header: '{}'", attr);
         String value = null;
-        if ((digitalObject.attributes != null) &&(digitalObject.attributes.getAsJsonObject("header") != null) &&(!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+        if ((digitalObject.attributes != null) && (digitalObject.attributes.getAsJsonObject("header") != null) && (!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
           value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
           if (value != null) {
             simpleClient.withHeader(attr, value);
@@ -504,7 +510,7 @@ public class Mapping2HttpService implements IMappingInterface {
         restHeader.addProperty(items, container.get(items));
       }
       dobj.attributes.add("header", restHeader);
-    
+
       dobj.type = DoipUtil.TYPE_DO;
       dobj.elements = digitalObject.elements;
       JsonElement dobjJson = GsonUtility.getGson().toJsonTree(dobj);
@@ -514,24 +520,24 @@ public class Mapping2HttpService implements IMappingInterface {
       resp.setAttribute(DoipConstants.MESSAGE_ATT, "Successfully created!");
     } else {
       String status = null;
-      switch(resource) {
+      switch (resource) {
         case BAD_REQUEST:
-              status = DoipConstants.STATUS_BAD_REQUEST;
-              break;
+          status = DoipConstants.STATUS_BAD_REQUEST;
+          break;
         case UNAUTHORIZED:
-              status = DoipConstants.STATUS_UNAUTHENTICATED;
-              break;
+          status = DoipConstants.STATUS_UNAUTHENTICATED;
+          break;
         case CONFLICT:
-              status = DoipConstants.STATUS_CONFLICT;
-              break;
+          status = DoipConstants.STATUS_CONFLICT;
+          break;
         case FORBIDDEN:
-              status = DoipConstants.STATUS_FORBIDDEN;
-              break;
+          status = DoipConstants.STATUS_FORBIDDEN;
+          break;
         case NOT_FOUND:
-              status = DoipConstants.STATUS_NOT_FOUND;
-              break;
+          status = DoipConstants.STATUS_NOT_FOUND;
+          break;
         default:
-              status = DoipConstants.STATUS_ERROR;
+          status = DoipConstants.STATUS_ERROR;
       }
       resp.setStatus(status);
       resp.setAttribute(DoipConstants.MESSAGE_ATT, resource.getReasonPhrase());
@@ -550,17 +556,17 @@ public class Mapping2HttpService implements IMappingInterface {
   }
 
   private void writeElementToOutput(DoipServerResponse resp, Element element) throws IOException {
-    byte[] file = element.in.readAllBytes();
+    byte[] elementContent = element.in.readAllBytes();
     if (element.in != null) {
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Add stream for Element: '{}'", element.id);
-        LOGGER.debug("No of Bytes: " + file.length);
-        LOGGER.debug("Content: " + new String(file));
+        LOGGER.debug("No of Bytes: " + elementContent.length);
+        LOGGER.debug("Content: " + new String(elementContent));
       }
       JsonObject json = new JsonObject();
       json.addProperty("id", element.id);
       resp.getOutput().writeJson(json);
-      resp.getOutput().writeBytes(file);
+      resp.getOutput().writeBytes(elementContent);
     }
 
   }
