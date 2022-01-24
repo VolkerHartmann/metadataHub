@@ -1,7 +1,36 @@
 # Code examples how to access DOIP client
 ```
+  private final static String JSON_SCHEMA = "{\n"
+          + "    \"$schema\": \"http://json-schema.org/draft/2019-09/schema#\",\n"
+          + "    \"$id\": \"http://www.example.org/schema/json\",\n"
+          + "    \"type\": \"object\",\n"
+          + "    \"title\": \"Json schema for tests\",\n"
+          + "    \"default\": {},\n"
+          + "    \"required\": [\n"
+          + "        \"title\",\n"
+          + "        \"date\"\n"
+          + "    ],\n"
+          + "    \"properties\": {\n"
+          + "        \"title\": {\n"
+          + "            \"$id\": \"#/properties/string\",\n"
+          + "            \"type\": \"string\",\n"
+          + "            \"title\": \"Title\",\n"
+          + "            \"description\": \"Title of object.\"\n"
+          + "        },\n"
+          + "        \"date\": {\n"
+          + "            \"$id\": \"#/properties/string\",\n"
+          + "            \"type\": \"string\",\n"
+          + "            \"format\": \"date\",\n"
+          + "            \"title\": \"Date\",\n"
+          + "            \"description\": \"Date of object\"\n"
+          + "        }\n"
+          + "    },\n"
+          + "    \"additionalProperties\": false\n"
+          + "}";
 
 ...
+public static void main(String[] args) { 
+    String TARGET_ONE = "35.TEST/DOIPServer";
     DoipClient client = new DoipClient();
     AuthenticationInfo authInfo = new PasswordAuthenticationInfo("admin", "password");
     ServiceInfo serviceInfo = new ServiceInfo(TARGET_ONE, "localhost", 8880);
@@ -20,6 +49,7 @@
     printResult(result);
     String id = result.id;
 ...
+}
  private static DigitalObject createSchema() throws IOException {
     Datacite43Schema datacite = new Datacite43Schema();
     Title title = new Title();
