@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nfdi4ing.de/turntable/mapping",
+  "type": "object",
+  "properties": {
+    "mappings": {
+      "type": "object",
+      "properties": {
+        "0.DOIP/Op.Hello": {
+          "$ref": "#/$defs/httpCall"
+        },
+        "0.DOIP/Op.Create": {
+          "$ref": "#/$defs/httpCall"
+        },
+        "0.DOIP/Op.Retrieve": {
+          "$ref": "#/$defs/httpCall"
+        },
+        "0.DOIP/Op.Update": {
+          "$ref": "#/$defs/httpCall"
+        },
+        "0.DOIP/Op.Delete": {
+          "type": "object"
+        },
+        "0.DOIP/Op.Search": {
+          "type": "object"
+        },
+        "0.DOIP/Op.ListOperations": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "0.DOIP/Op.Create",
+        "0.DOIP/Op.Retrieve"
+      ]
+    }
+  },
+  "required": [
+    "mappings"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "classMapper": {
+      "type": "object",
+      "properties": {
+        "className": {
+          "type": "string"
+        },
+        "mapperClass": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "className",
+        "mapperClass"
+      ],
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "ETag": {
+          "type": "string"
+        },
+        "If-Match": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "httpCall": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "requestUrl": {
+          "type": "string"
+        },
+        "verb": {
+          "type": "string"
+        },
+        "mimetype": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "#/$defs/body"
+        },
+        "header": {
+          "$ref": "#/$defs/header"
+        },
+        "metadata": {
+          "$ref": "#/$defs/classMapper"
+        },
+        "response": {
+          "$ref": "#/$defs/classMapper"
+        }
+      },
+      "required": [
+        "requestUrl",
+        "verb"],
+      "additionalProperties": false
+    }
+  }
+}
