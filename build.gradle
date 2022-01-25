@@ -1,7 +1,7 @@
 plugins {
     id 'application'
     id 'java'
-    id 'org.jsonschema2dataclass' version '3.2.1'
+    id 'org.jsonschema2dataclass' version '4.2.0'
 }
 repositories {
     mavenCentral()
@@ -47,7 +47,6 @@ sourceSets {
 }
 
 jsonSchema2Pojo {
-  annotationStyle = 'gson'
   source.setFrom files("${project.rootDir}/src/main/resources/json/schema/")
   targetPackage = 'edu.kit.turntable.mapping'
   propertyWordDelimiters = '_'
