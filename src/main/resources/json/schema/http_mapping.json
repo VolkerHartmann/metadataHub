@@ -13,7 +13,10 @@
           "$ref": "#/$defs/httpCall"
         },
         "0.DOIP/Op.Retrieve": {
-          "$ref": "#/$defs/httpCall"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/httpCall"
+          }
         },
         "0.DOIP/Op.Update": {
           "$ref": "#/$defs/httpCall"
@@ -56,11 +59,9 @@
       "additionalProperties": false
     },
     "body": {
+      "description": "Put all your elements you want to forward here and their representative in the propritary server.",
       "type": "object",
       "properties": {
-        "schema": {
-          "type": "string"
-        },
         "metadata": {
           "type": "string"
         }
@@ -70,18 +71,8 @@
       }
     },
     "header": {
+      "description": "Any header variable which should be added to the HTTP request. In case of an empty value the value will fetched by the response and should be forwarded to the DOIP client.",
       "type": "object",
-      "properties": {
-        "ETag": {
-          "type": "string"
-        },
-        "If-Match": {
-          "type": "string"
-        },
-        "location": {
-          "type": "string"
-        }
-      },
       "additionalProperties": {
         "type": "string"
       }
@@ -90,12 +81,15 @@
       "type": "object",
       "properties": {
         "label": {
+          "title": "Label",
+          "description": "In case of RETRIEVE 'label' should hold the label of the element this http call is used for.",
           "type": "string"
         },
         "requestUrl": {
           "type": "string"
         },
         "verb": {
+          "description": "Use one of the HTTP request methods. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods",
           "type": "string"
         },
         "mimetype": {

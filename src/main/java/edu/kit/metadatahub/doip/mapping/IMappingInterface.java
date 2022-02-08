@@ -15,38 +15,11 @@
  */
 package edu.kit.metadatahub.doip.mapping;
 
-import edu.kit.metadatahub.doip.server.*;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-import edu.kit.metadatahub.doip.ExtendedOperations;
-import edu.kit.turntable.mapping.MappingSchema;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
+import edu.kit.turntable.mapping.HttpMapping;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.PublicKey;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Stream;
-import net.dona.doip.DoipConstants;
-import net.dona.doip.InDoipMessage;
-import net.dona.doip.InDoipSegment;
-import net.dona.doip.client.DigitalObject;
 import net.dona.doip.client.DoipException;
-import net.dona.doip.server.DoipProcessor;
 import net.dona.doip.server.DoipServerRequest;
 import net.dona.doip.server.DoipServerResponse;
-import net.dona.doip.util.GsonUtility;
-import net.dona.doip.util.InDoipMessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +36,7 @@ public interface IMappingInterface {
   static final Logger LOGGER = LoggerFactory.getLogger(IMappingInterface.class);
  
 
-  void initMapping(MappingSchema mapping);
+  void initMapping(HttpMapping mapping);
 
 
 

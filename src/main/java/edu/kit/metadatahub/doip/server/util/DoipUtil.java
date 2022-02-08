@@ -20,14 +20,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import edu.kit.turntable.mapping.Datacite43Schema;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
 import net.dona.doip.DoipConstants;
 import net.dona.doip.InDoipSegment;
 import net.dona.doip.client.DigitalObject;
@@ -59,23 +54,54 @@ public class DoipUtil {
   private static final Logger LOGGER = LoggerFactory.getLogger(DoipUtil.class);
 
   private DigitalObject digitalObject = null;
+  /**
+   * Map holding all streams of request.
+   */
+  private Map<String, byte[]> streamMap = null;
+  /**
+   * Request.
+   */
+  private final DoipServerRequest doipServerRequest;
 
-  public DigitalObject getDigitalObject(DoipServerRequest req) throws DoipException, IOException {
+  public DoipUtil(DoipServerRequest req) {
+    doipServerRequest = req;
+  }
+
+  public DigitalObject getDigitalObject() throws DoipException, IOException {
     if (digitalObject == null) {
-      InDoipSegment firstSegment = InDoipMessageUtil.getFirstSegment(req.getInput());
-      LOGGER.trace("Deserializing digital object from first segment.");
-      digitalObject = GsonUtility.getGson().fromJson(firstSegment.getJson(), DigitalObject.class);
+      InDoipSegment firstSegment = InDoipMessageUtil.getFirstSegment(doipServerRequest.getInput());
+      if (firstSegment != null) {
+        LOGGER.trace("Deserializing digital object from first segment.");
+        digitalObject = GsonUtility.getGson().fromJson(firstSegment.getJson(), DigitalObject.class);
+      }
     }
     return digitalObject;
   }
 
-  public Datacite43Schema getDatacite(DoipServerRequest req) throws DoipException, IOException {
-    digitalObject = getDigitalObject(req);
-    JsonElement metadata = digitalObject.attributes.get(ATTR_DATACITE);
-    LOGGER.debug(metadata.toString());
-    LOGGER.debug(metadata.getAsString());
-    Datacite43Schema resource = GsonUtility.getGson().fromJson(metadata.getAsString(), Datacite43Schema.class);
+  /**
+   * Get Datacite attribute from a digital object.
+   *
+   * @return Datacite
+   * @throws IOException
+   */
+  public Datacite43Schema getDatacite() throws DoipException, IOException {
+    return getDatacite(getDigitalObject());
+  }
 
+  /**
+   * Get Datacite attribute from a digital object.
+   *
+   * @param dobj Digital object.
+   * @return Datacite
+   * @throws IOException
+   */
+  public Datacite43Schema getDatacite(DigitalObject dobj) throws IOException {
+    Datacite43Schema resource = null;
+    if (dobj != null) {
+      JsonElement metadata = dobj.attributes.get(ATTR_DATACITE);
+      LOGGER.trace("Datacite of digital object: '{}'", metadata);
+      resource = GsonUtility.getGson().fromJson(metadata.getAsString(), Datacite43Schema.class);
+    }
     return resource;
   }
 
@@ -89,6 +115,23 @@ public class DoipUtil {
     return digitalObject;
   }
 
+  /**
+   * Get boolean attribute of request.
+   *
+   * @param att Name of attribute.
+   * @return attribute.
+   */
+  public boolean getBooleanAttributeFromRequest(String att) {
+    return getBooleanAttributeFromRequest(doipServerRequest, att);
+  }
+
+  /**
+   * Get boolean attribute of request.
+   *
+   * @param req Request.
+   * @param att Name of attribute.
+   * @return attribute.
+   */
   public static boolean getBooleanAttributeFromRequest(DoipServerRequest req, String att) {
     JsonElement el = req.getAttribute(att);
     if (el == null || !el.isJsonPrimitive()) {
@@ -105,38 +148,48 @@ public class DoipUtil {
     return false;
   }
 
-  public static Map<String, byte[]> getStreams(DoipServerRequest req) throws DoipException {
-    Map<String, byte[]> streamMap = new HashMap<>();
-    Iterator<InDoipSegment> iterator = req.getInput().iterator();
-    while (iterator.hasNext()) {
-      if (LOGGER.isTraceEnabled()) {
-        LOGGER.trace("*************************************************************");
-        LOGGER.trace("Next Segment.....");
-        LOGGER.trace("*************************************************************");
-      }
-      InDoipSegment segment = iterator.next();
-      if (segment.isJson() == false) {
-        throw new DoipException(DoipConstants.STATUS_BAD_REQUEST, "Segment should be a JSON!");
-      } else {
-        try {
-          // Read first part of segment which should contain JSON.
-          // Read id of element
-          LOGGER.trace("Content: '{}'", segment.getJson().toString());
-          String id = segment.getJson().getAsJsonObject().get("id").getAsString();
-          LOGGER.trace("ID: '{}'", id);
+  public Map<String, byte[]> getStreams() throws DoipException {
+    if (streamMap == null) {
+      streamMap = new HashMap<>();
+      Iterator<InDoipSegment> iterator = doipServerRequest.getInput().iterator();
+      while (iterator.hasNext()) {
+        if (LOGGER.isTraceEnabled()) {
+          LOGGER.trace("*************************************************************");
+          LOGGER.trace("Next Segment.....");
+          LOGGER.trace("*************************************************************");
+        }
+        InDoipSegment segment = iterator.next();
+        if (segment.isJson() == false) {
+          throw new DoipException(DoipConstants.STATUS_BAD_REQUEST, "Segment should be a JSON!");
+        } else {
+          try {
+            // Read first part of segment which should contain JSON.
+            // Read id of element
+            LOGGER.trace("Content: '{}'", segment.getJson().toString());
+            String id = segment.getJson().getAsJsonObject().get("id").getAsString();
+            LOGGER.trace("ID: '{}'", id);
 
-          segment = iterator.next();
-          
-          streamMap.put(id, segment.getInputStream().readNBytes(65536));
-          segment.getInputStream().close();
-        } catch (IOException ex) {
-          throw new DoipException(DoipConstants.STATUS_BAD_REQUEST, "Error while reading JSON!");
+            segment = iterator.next();
+
+            streamMap.put(id, segment.getInputStream().readNBytes(65536));
+            segment.getInputStream().close();
+          } catch (IOException ex) {
+            throw new DoipException(DoipConstants.STATUS_BAD_REQUEST, "Error while reading JSON!");
+          }
         }
       }
+      for (String key : streamMap.keySet()) {
+        LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
+      }
     }
-    for (String key: streamMap.keySet())
-      LOGGER.trace("Found stream: '{}' -> '{}'", key, streamMap.get(key).length);
     return streamMap;
+  }
+
+  /**
+   * Gets target id of request.
+   */
+  public String getTargetId() {
+    return doipServerRequest.getTargetId();
   }
 
 }
