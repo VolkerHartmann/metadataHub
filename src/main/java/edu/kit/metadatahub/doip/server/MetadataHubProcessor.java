@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import edu.kit.metadatahub.doip.ExtendedOperations;
 import edu.kit.metadatahub.doip.mapping.Mapping2HttpService;
+import edu.kit.turntable.mapping.HttpMapping;
 import edu.kit.turntable.mapping.MappingSchema;
 
 import java.io.ByteArrayInputStream;
@@ -79,7 +80,7 @@ public class MetadataHubProcessor implements DoipProcessor {
   private boolean authenticationEnabled = false;
   private PublicKey publicKey;
   private String repoBaseUri;
-  private Map<String, MappingSchema> allMappings;
+  private Map<String, HttpMapping> allMappings;
   private String mappingsDir;
   private String mappingsSuffix;
 
@@ -256,7 +257,7 @@ public class MetadataHubProcessor implements DoipProcessor {
     printRequest(req);
     // ToDo make mapping and request
     Mapping2HttpService mappingClient = new Mapping2HttpService();
-    mappingClient.initMapping(null);
+    mappingClient.initMapping(allMappings.get(req.getTargetId()));
     mappingClient.create(req, resp);
     printResponse(resp);
     LOGGER.debug("Returning from create().");
@@ -319,7 +320,7 @@ public class MetadataHubProcessor implements DoipProcessor {
     }
     // ToDo make mapping and request
     Mapping2HttpService mappingClient = new Mapping2HttpService();
-    mappingClient.initMapping(null);
+    mappingClient.initMapping(allMappings.getOrDefault(req.getTargetId(), allMappings.get("default")));
     mappingClient.retrieve(req, resp);
     printResponse(resp);
     LOGGER.debug("Returning from retrieve().");
@@ -344,7 +345,7 @@ public class MetadataHubProcessor implements DoipProcessor {
     // ToDo make mapping and request
      // ToDo make mapping and request
     Mapping2HttpService mappingClient = new Mapping2HttpService();
-    mappingClient.initMapping(null);
+    mappingClient.initMapping(allMappings.get(req.getTargetId()));
     mappingClient.update(req, resp);
     printResponse(resp);
     LOGGER.debug("Returning from update().");
@@ -518,12 +519,13 @@ public class MetadataHubProcessor implements DoipProcessor {
           try {
             JsonReader reader;
             reader = new JsonReader(new FileReader(path.toFile()));
-            MappingSchema mappingSchema = gson.fromJson(reader, MappingSchema.class);
+            HttpMapping mappingSchema = gson.fromJson(reader, HttpMapping.class);
             LOGGER.debug("Mapping: '{}'", mappingSchema.toString());
             if (mappingSchema.getTargetId() != null) {
               // add mapping to map
               allMappings.put(mappingSchema.getTargetId(), mappingSchema);
               allMappings.put(mappingSchema.getBaseUrl(), mappingSchema);
+              allMappings.put("default", mappingSchema);
               
             }
           } catch (IOException ex) {

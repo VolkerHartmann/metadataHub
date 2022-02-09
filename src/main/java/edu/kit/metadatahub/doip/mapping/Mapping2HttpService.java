@@ -74,6 +74,7 @@ public class Mapping2HttpService implements IMappingInterface {
   @Override
   public void initMapping(HttpMapping mapping) {
     mappingSchema = mapping;
+    LOGGER.trace("Initialise mapping service with mapping: '{}'", mappingSchema);
     handleManager = new HandleMockup();
   }
 
@@ -85,7 +86,7 @@ public class Mapping2HttpService implements IMappingInterface {
   @Override
   public void create(DoipServerRequest req, DoipServerResponse resp) throws DoipException, IOException {
     LOGGER.debug("Repo: Create...");
-    doRestCall(req, resp, mappingSchema.getMappings().get0DOIPOpCreate());
+    doRestCall(req, resp, mappingSchema.getMappings().getDoipOpCreate());
     resp.setAttribute(DoipConstants.MESSAGE_ATT, "Successfully created!");
     LOGGER.trace("Returning from create().");
   }
@@ -113,26 +114,30 @@ public class Mapping2HttpService implements IMappingInterface {
       throw new DoipException(DoipConstants.MESSAGE_ATT, "Input is not allowed for retrieving a digital object!");
     }
     Set<String> elementSet = new HashSet<>();
-    for (HttpCall call : mappingSchema.getMappings().get0DOIPOpRetrieve()) {
+    for (HttpCall call : mappingSchema.getMappings().getDoipOpRetrieve()) {
       elementSet.add(call.getLabel());
     }
     String[] allElements = elementSet.toArray(new String[1]);
     DigitalObject digitalObject = new DigitalObject();
     digitalObject.elements = new ArrayList<>();
     digitalObject.id = doipUtil.getTargetId();
-    String[] selectedElements = new String[0];
+    String[] selectedElements = new String[1];
+    selectedElements[0] = "metadata";
+    boolean retrieveNoElements = true;
     if (req.getAttribute(ATTRIBUTE_ALL_ELEMENTS) != null && req.getAttribute(ATTRIBUTE_ALL_ELEMENTS).getAsBoolean()) {
       selectedElements = allElements;
+      retrieveNoElements = false;
     }
     if (req.getAttribute(ATTRIBUTE_ELEMENT) != null) {
       retrieveElementOnly = true;
       selectedElements = new String[1];
       selectedElements[0] = req.getAttributeAsString(ATTRIBUTE_ELEMENT);
+      retrieveNoElements = false;
     }
     // Collect all elements.
     List<HttpCall> httpCall = new ArrayList<>();
     for (String element : selectedElements) {
-      for (HttpCall singleCall : mappingSchema.getMappings().get0DOIPOpRetrieve()) {
+      for (HttpCall singleCall : mappingSchema.getMappings().getDoipOpRetrieve()) {
         if (singleCall.getLabel().equals(element)) {
           httpCall.add(singleCall);
           break;
@@ -144,16 +149,20 @@ public class Mapping2HttpService implements IMappingInterface {
     for (HttpCall restCall : httpCall) {
       HttpStatus resource = doPartialRestCall(doipUtil, collectDigitalObject, restCall);
     }
-    JsonElement digitalObjectAsJson = GsonUtility.getGson().toJsonTree(digitalObject);
+    JsonElement digitalObjectAsJson = GsonUtility.getGson().toJsonTree(collectDigitalObject);
     LOGGER.debug("JSON element: '{}'", digitalObjectAsJson.toString());
     if (retrieveElementOnly) {
       LOGGER.trace("Write element directly to output...");
-      resp.getOutput().writeBytes(digitalObject.elements.get(0).in);
+      resp.getOutput().writeBytes(collectDigitalObject.elements.get(0).in);
     } else {
       resp.getOutput().writeJson(digitalObjectAsJson);
       // attach elements
-      for (Element singleElement : digitalObject.elements) {
-        writeElementToOutput(resp, singleElement);
+      if (!retrieveNoElements) {
+        for (Element singleElement : collectDigitalObject.elements) {
+          writeElementToOutput(resp, singleElement);
+        }
+      } else {
+        collectDigitalObject.elements = new ArrayList<>();
       }
     }
     resp.setStatus(DoipConstants.STATUS_OK);
@@ -167,7 +176,7 @@ public class Mapping2HttpService implements IMappingInterface {
   public void update(DoipServerRequest req, DoipServerResponse resp) throws DoipException, IOException {
     LOGGER.debug("Repo: Update...");
 
-    doRestCall(req, resp, mappingSchema.getMappings().get0DOIPOpUpdate());
+    doRestCall(req, resp, mappingSchema.getMappings().getDoipOpUpdate());
     LOGGER.trace("Returning from update().");
   }
 
@@ -269,6 +278,8 @@ public class Mapping2HttpService implements IMappingInterface {
     IMetadataMapper metadataMapperResponse = null;
     if ((mapping.getResponse() != null)
             && (mapping.getResponse().getClassName() != null)) {
+      LOGGER.trace("Get mapper for '{}'", mapping.getResponse().getMapperClass());
+      LOGGER.trace("Get class for '{}'", mapping.getResponse().getClassName());
       try {
         metadataClassResponse = Class.forName(mapping.getResponse().getClassName());
         metadataMapperResponse = (IMetadataMapper) Class.forName(mapping.getResponse().getMapperClass()).getDeclaredConstructor().newInstance();
@@ -338,7 +349,7 @@ public class Mapping2HttpService implements IMappingInterface {
         if (metadataMapperResponse != null) {
           responseBody = simpleClient.getResource(metadataClassResponse);
           if (!(responseBody instanceof Datacite43Schema)) {
-            datacite = ((IMetadataMapper) metadataMapper).mapToDatacite(responseBody);
+            datacite = ((IMetadataMapper) metadataMapperResponse).mapToDatacite(responseBody);
           }
           responseBody = datacite;
         } else {
@@ -366,7 +377,7 @@ public class Mapping2HttpService implements IMappingInterface {
         if (metadataMapperResponse != null) {
           datacite = ((IMetadataMapper) metadataMapperResponse).mapToDatacite(responseBody);
         }
-        datacite = (Datacite43Schema) responseBody;
+        responseBody = (Datacite43Schema) datacite;
       }
       LOGGER.trace("Build response...");
       if (collectDigitalObject.id == null) {
@@ -377,9 +388,12 @@ public class Mapping2HttpService implements IMappingInterface {
       }
       collectDigitalObject.attributes.add(DoipUtil.ATTR_DATACITE, GsonUtility.getGson().toJsonTree(datacite));
       collectDigitalObject.type = DoipUtil.TYPE_DO;
-      collectDigitalObject.elements = new ArrayList<>(); //= digitalObject.elements;
+      if (collectDigitalObject.elements == null) {
+        collectDigitalObject.elements = new ArrayList<>();
+      } //= digitalObject.elements;
       switch (mapping.getVerb()) {
         case "GET":
+          LOGGER.trace("Add element '{}' to digital object. ", mapping.getLabel());
           // Add response to response object
           Element doipElement = new Element();
           doipElement.id = mapping.getLabel();

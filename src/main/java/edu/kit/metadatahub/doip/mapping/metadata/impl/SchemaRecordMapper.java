@@ -63,7 +63,11 @@ public class SchemaRecordMapper implements IMetadataMapper<SchemaRecordSchema> {
     datacite.getDates().add(upDate);
     Identifier identifier = new Identifier();
     identifier.setIdentifier(metadata.getSchemaId());//Pid().getIdentifier());
-    identifier.setIdentifierType(metadata.getPid().getIdentifierType());
+    if ((metadata.getPid() != null) && (metadata.getPid().getIdentifierType() != null)) {
+      identifier.setIdentifierType(metadata.getPid().getIdentifierType());
+    } else {
+      identifier.setIdentifierType("Handle");
+    }
     datacite.getIdentifiers().add(identifier);
 
     return datacite;

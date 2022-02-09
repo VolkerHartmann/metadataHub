@@ -3,31 +3,37 @@
   "$id": "https://nfdi4ing.de/turntable/mapping",
   "type": "object",
   "properties": {
+    "targetId": {
+      "type": "string"
+    },
+    "baseUrl": {
+      "type": "string"
+    },
     "mappings": {
       "type": "object",
       "properties": {
-        "0.DOIP/Op.Hello": {
+        "doipOpHello": {
           "$ref": "#/$defs/httpCall"
         },
-        "0.DOIP/Op.Create": {
+        "doipOpCreate": {
           "$ref": "#/$defs/httpCall"
         },
-        "0.DOIP/Op.Retrieve": {
+        "doipOpRetrieve": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/httpCall"
           }
         },
-        "0.DOIP/Op.Update": {
+        "doipOpUpdate": {
           "$ref": "#/$defs/httpCall"
         },
-        "0.DOIP/Op.Delete": {
+        "doipOpDelete": {
           "type": "object"
         },
-        "0.DOIP/Op.Search": {
+        "doipOpSearch": {
           "type": "object"
         },
-        "0.DOIP/Op.ListOperations": {
+        "doipOpListOperations": {
           "type": "object"
         }
       },
