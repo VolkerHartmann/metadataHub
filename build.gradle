@@ -54,4 +54,8 @@ jsonSchema2Pojo {
 
 application {
     mainClassName = javaMainClass
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_16)) {
+        println 'Allow access to private methods of package java.security.cert...'
+        applicationDefaultJvmArgs = ['--add-opens=java.base/java.security.cert=ALL-UNNAMED']
+   }
 }
