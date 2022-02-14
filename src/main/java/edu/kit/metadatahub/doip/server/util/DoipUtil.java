@@ -192,4 +192,11 @@ public class DoipUtil {
     return doipServerRequest.getTargetId();
   }
 
+  /**
+   * Gets authentication of request.
+   */
+  public JsonElement getAuthentication() {
+    return doipServerRequest.getAuthentication();
+  }
+
 }

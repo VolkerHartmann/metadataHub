@@ -258,7 +258,19 @@ public class Mapping2HttpService implements IMappingInterface {
 
     SimpleServiceClient simpleClient = SimpleServiceClient.create(baseUrl);
     simpleClient.accept(MediaType.parseMediaType(acceptType));
-
+    // Add authentication if available
+    if (doipUtil.getAuthentication() != null) {
+      JsonElement authentication = doipUtil.getAuthentication();
+      LOGGER.trace("Authentication available: " + authentication.toString());
+      if (authentication.isJsonObject()) {
+        JsonObject object = (JsonObject) authentication;
+        if (object.has("token")) {
+          simpleClient.withBearerToken(object.get("token").getAsString());
+        } else {
+          LOGGER.warn("Only authorization via token supported yet!");
+        }
+      }
+    }
     ///////////////////////////////////////////////////////////////
     // Prepare metadata
     ///////////////////////////////////////////////////////////////
