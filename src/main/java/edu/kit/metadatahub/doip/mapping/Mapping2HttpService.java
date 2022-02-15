@@ -309,7 +309,11 @@ public class Mapping2HttpService implements IMappingInterface {
       for (String attr : mapping.getHeader().getAdditionalProperties().keySet()) {
         LOGGER.trace("Add header: '{}'", attr);
         String value = null;
-        if ((digitalObject.attributes != null) && (digitalObject.attributes.getAsJsonObject("header") != null) && (!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
+        if ((digitalObject != null)
+                && (digitalObject.attributes != null)
+                && (digitalObject.attributes.getAsJsonObject("header") != null)
+                && (digitalObject.attributes.getAsJsonObject("header").get(attr) != null)
+                && (!digitalObject.attributes.getAsJsonObject("header").get(attr).isJsonNull())) {
           value = digitalObject.attributes.getAsJsonObject("header").get(attr).getAsString();
           if (value != null) {
             LOGGER.trace("Add header: '{}'= '{}'", attr, value);

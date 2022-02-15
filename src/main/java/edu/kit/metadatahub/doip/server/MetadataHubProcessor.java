@@ -16,6 +16,7 @@
 package edu.kit.metadatahub.doip.server;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -23,7 +24,6 @@ import com.google.gson.stream.JsonReader;
 import edu.kit.metadatahub.doip.ExtendedOperations;
 import edu.kit.metadatahub.doip.mapping.Mapping2HttpService;
 import edu.kit.turntable.mapping.HttpMapping;
-import edu.kit.turntable.mapping.MappingSchema;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,9 +53,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This Server implements the mapping to another metadata repository which will
- * not implement the DOIP interface.
- * It acts as a turntable which executes the apsropriate class for choosing the
- * correct mapping implementation.
+ * not implement the DOIP interface. It acts as a turntable which executes the
+ * apsropriate class for choosing the correct mapping implementation.
  */
 public class MetadataHubProcessor implements DoipProcessor {
 
@@ -86,8 +85,8 @@ public class MetadataHubProcessor implements DoipProcessor {
 
   @Override
   public void init(JsonObject config) {
-     System.out.println("--------------------->TurntableDoipProcessor4Mapping");
-   LOGGER.debug("Initializing DOIP processor with configuration {}.", config);
+    System.out.println("--------------------->TurntableDoipProcessor4Mapping");
+    LOGGER.debug("Initializing DOIP processor with configuration {}.", config);
     DoipProcessor.super.init(config);
     serviceId = config.get("serviceId").getAsString();
     serviceName = config.has("serviceName") ? config.get("serviceName").getAsString() : null;
@@ -343,9 +342,9 @@ public class MetadataHubProcessor implements DoipProcessor {
     String targetId = req.getTargetId();
     LOGGER.debug("Updating targetId {}. Obtaining DataResource from input message.", targetId);
     // ToDo make mapping and request
-     // ToDo make mapping and request
+    // ToDo make mapping and request
     Mapping2HttpService mappingClient = new Mapping2HttpService();
-    mappingClient.initMapping(allMappings.get(req.getTargetId()));
+    mappingClient.initMapping(allMappings.getOrDefault(req.getTargetId(), allMappings.get("default")));
     mappingClient.update(req, resp);
     printResponse(resp);
     LOGGER.debug("Returning from update().");
@@ -418,7 +417,6 @@ public class MetadataHubProcessor implements DoipProcessor {
     }
     return new ByteArrayInputStream(bout.toByteArray());
   }
-
 
   @Override
   public void shutdown() {
@@ -508,32 +506,35 @@ public class MetadataHubProcessor implements DoipProcessor {
    * should be placed in a file with suffix '_mapping.json'
    */
   private void parseAllMappings() {
-      Path pathToMappings = Paths.get(mappingsDir).toAbsolutePath();
-      LOGGER.debug("Parse all files with suffix '{}' in folder '{}'", mappingsSuffix, pathToMappings);
-      allMappings = new HashMap<>();
+    Path pathToMappings = Paths.get(mappingsDir).toAbsolutePath();
+    LOGGER.debug("Parse all files with suffix '{}' in folder '{}'", mappingsSuffix, pathToMappings);
+    allMappings = new HashMap<>();
     try {
       Stream<Path> list = Files.list(pathToMappings);
-      Gson gson = new Gson();
+      Gson gson = new GsonBuilder()
+              .setPrettyPrinting()
+              .disableHtmlEscaping()
+              .create();
       list.filter(file -> file.toString().endsWith(mappingsSuffix)).forEach(path -> {
-          LOGGER.debug("Read mapping from file: '{}'", path.getFileName());
-          try {
-            JsonReader reader;
-            reader = new JsonReader(new FileReader(path.toFile()));
-            HttpMapping mappingSchema = gson.fromJson(reader, HttpMapping.class);
-            LOGGER.debug("Mapping: '{}'", mappingSchema.toString());
-            if (mappingSchema.getTargetId() != null) {
-              // add mapping to map
-              allMappings.put(mappingSchema.getTargetId(), mappingSchema);
-              allMappings.put(mappingSchema.getBaseUrl(), mappingSchema);
-              allMappings.put("default", mappingSchema);
-              
-            }
-          } catch (IOException ex) {
-            LOGGER.error("Error reading mapping from file '{}'!", path.getFileName());
+        LOGGER.debug("Read mapping from file: '{}'", path.getFileName());
+        try {
+          JsonReader reader;
+          reader = new JsonReader(new FileReader(path.toFile()));
+          HttpMapping mappingSchema = gson.fromJson(reader, HttpMapping.class);
+          LOGGER.debug("Mapping: '{}'", gson.toJson(mappingSchema));
+          if (mappingSchema.getTargetId() != null) {
+            // add mapping to map
+            allMappings.put(mappingSchema.getTargetId(), mappingSchema);
+            allMappings.put(mappingSchema.getBaseUrl(), mappingSchema);
+            allMappings.put("default", mappingSchema);
+
           }
+        } catch (IOException ex) {
+          LOGGER.error("Error reading mapping from file '{}'!", path.getFileName());
+        }
       });
     } catch (IOException ex) {
-          LOGGER.error("Error reading mapping dir '{}'!", pathToMappings);
+      LOGGER.error("Error reading mapping dir '{}'!", pathToMappings);
     }
   }
 

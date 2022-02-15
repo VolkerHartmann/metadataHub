@@ -11,11 +11,15 @@
       "verb": "POST",
       "mimetype": "application/json",
       "body": {
-        "schema": "schema",
-        "metadata": "record"
+        "metadata": "record",
+        "additionalProperties": {
+          "schema": "schema"
+        }
       },
       "header": {
-        "ETag": ""
+        "additionalProperties": {
+          "ETag": ""
+        }
       },
       "metadata": {
         "className": "edu.kit.turntable.mapping.SchemaRecordSchema",
@@ -39,7 +43,9 @@
         "verb": "GET",
         "mimetype": "application/vnd.datamanager.schema-record+json",
         "header": {
-          "ETag": ""
+          "additionalProperties": {
+            "ETag": ""
+          }
         },
         "response": {
           "className": "edu.kit.turntable.mapping.SchemaRecordSchema",
@@ -52,11 +58,15 @@
       "verb": "PUT",
       "mimetype": "application/json",
       "body": {
-        "schema": "schema",
-        "metadata": "record"
+        "metadata": "record",
+        "additionalProperties": {
+          "schema": "schema"
+        }
       },
       "header": {
-        "If-Match": ""
+        "additionalProperties": {
+          "If-Match": ""
+        }
       },
       "metadata": {
         "className": "edu.kit.turntable.mapping.SchemaRecordSchema",
